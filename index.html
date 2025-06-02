@@ -1,26 +1,189 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <title>ポモドーロタイマー</title>
+  <meta charset="UTF-8">
+  <title>ほんわかポモドーロタイマー</title>
+  <style>
+    body {
+      font-family: 'Arial Rounded MT Bold', 'Hiragino Maru Gothic ProN', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background-color: #fff5f5;
+      color: #5a5a5a;
+    }
+    
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 30px;
+      background-color: #fff9f9;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    h1 {
+      color: #f0a5a5;
+      margin-bottom: 20px;
+      font-size: 32px;
+    }
+    
+    #mode {
+      font-size: 24px;
+      margin-bottom: 15px;
+      color: #7e9cd8;
+      font-weight: bold;
+    }
+    
+    #timer {
+      font-size: 60px;
+      margin: 25px 0;
+      color: #f08080;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: bold;
+      box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    #start {
+      background-color: #a5d6a7;
+      color: white;
+    }
+    
+    #stop {
+      background-color: #ffb74d;
+      color: white;
+    }
+    
+    #reset {
+      background-color: #90caf9;
+      color: white;
+    }
+    
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+    }
+    
+    .footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #b0b0b0;
+    }
+  </style>
 </head>
 <body>
-  <h1>ポモドーロタイマー</h1>
-  <p id="timer">25:00</p>
-  <button onclick="startTimer()">スタート</button>
+  <div class="container">
+    <h1>♡ ほんわかポモドーロ ♡</h1>
+    <div id="mode">作業中 ✏️</div>
+    <div id="timer">25:00</div>
+    <div class="buttons">
+      <button id="start">スタート</button>
+      <button id="stop">ストップ</button>
+      <button id="reset">リセット</button>
+    </div>
+    <div class="footer">
+      がんばりすぎないでね♪
+    </div>
+  </div>
 
   <script>
-    let seconds = 25 * 60;
-    let interval;
+    // タイマー設定（秒単位）
+    const workTime = 25 * 60;
+    const breakTime = 5 * 60;
+    let timeLeft = workTime;
+    let timerId = null;
+    let isWork = true;
+
+    const timerDisplay = document.getElementById('timer');
+    const modeDisplay = document.getElementById('mode');
+    const startBtn = document.getElementById('start');
+    const stopBtn = document.getElementById('stop');
+    const resetBtn = document.getElementById('reset');
+
+    function updateDisplay() {
+      const min = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+      const sec = String(timeLeft % 60).padStart(2, '0');
+      timerDisplay.textContent = `${min}:${sec}`;
+      modeDisplay.textContent = isWork ? '作業中 ✏️' : '休憩中 🌸';
+      
+      // モードに応じて色を変更
+      if (isWork) {
+        timerDisplay.style.color = '#f08080';
+        modeDisplay.style.color = '#7e9cd8';
+      } else {
+        timerDisplay.style.color = '#7e9cd8';
+        modeDisplay.style.color = '#f08080';
+      }
+    }
 
     function startTimer() {
-      interval = setInterval(() => {
-        seconds--;
-        const min = String(Math.floor(seconds / 60)).padStart(2, '0');
-        const sec = String(seconds % 60).padStart(2, '0');
-        document.getElementById('timer').textContent = `${min}:${sec}`;
-        if (seconds <= 0) clearInterval(interval);
+      if (timerId) return;
+      timerId = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          updateDisplay();
+        } else {
+          clearInterval(timerId);
+          timerId = null;
+          isWork = !isWork;
+          timeLeft = isWork ? workTime : breakTime;
+          updateDisplay();
+          playSound();
+        }
       }, 1000);
     }
+
+    function stopTimer() {
+      clearInterval(timerId);
+      timerId = null;
+    }
+
+    function resetTimer() {
+      stopTimer();
+      isWork = true;
+      timeLeft = workTime;
+      updateDisplay();
+    }
+    
+    function playSound() {
+      // シンプルなビープ音を使用
+      try {
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = context.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 800;
+        oscillator.connect(context.destination);
+        oscillator.start();
+        setTimeout(() => {
+          oscillator.stop();
+        }, 500);
+      } catch (e) {
+        console.log('音の再生に失敗しました:', e);
+      }
+    }
+
+    startBtn.onclick = startTimer;
+    stopBtn.onclick = stopTimer;
+    resetBtn.onclick = resetTimer;
+
+    updateDisplay();
   </script>
 </body>
 </html>
