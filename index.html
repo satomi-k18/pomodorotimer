@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ポモドーロタイマー</title>
+</head>
+<body>
+  <h1>ポモドーロタイマー</h1>
+  <p id="timer">25:00</p>
+  <button onclick="startTimer()">スタート</button>
+
+  <script>
+    let seconds = 25 * 60;
+    let interval;
+
+    function startTimer() {
+      interval = setInterval(() => {
+        seconds--;
+        const min = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const sec = String(seconds % 60).padStart(2, '0');
+        document.getElementById('timer').textContent = `${min}:${sec}`;
+        if (seconds <= 0) clearInterval(interval);
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
